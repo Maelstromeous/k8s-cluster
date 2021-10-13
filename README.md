@@ -92,3 +92,18 @@ You should now see a new option called `Longhorn` in the left hand menu. Clickin
 **I highly encourage you set up an S3 backup for your data!** [Instructions here](https://longhorn.io/docs/1.0.2/snapshots-and-backups/backup-and-restore/set-backup-target/)
 
 To enter the above settings, you need to find the Options section `Longhorn Default Settings` while you're installing Longhorn. Check the Customize Default Settings and add the backup target `s3://<your-bucket-name>@<your-aws-region>/`. 
+
+You will need to create a secret of your AWS creds. To do this, go to your AWS account and get an IAM ID and secret. Use the below commands to generate the secret
+
+```
+echo -n '<AWS_ACCESS_KEY_ID>' > ./key.txt
+echo -n '<AWS_SECRET_ACCESS_KEY> > './secret.txt
+
+kubectl create secret generic -n longhorn-system aws-secret \
+--from-file=AWS_ACCESS_KEY_ID=./key.txt \
+--from-file=AWS_SECRET_ACCESS_KEY=./secret.txt
+```
+
+Supply the name of your secret to the Longhorn settings.
+
+You will also need to create a recurring Backup job or none of your data will be backed up!

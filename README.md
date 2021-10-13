@@ -40,11 +40,55 @@ Grab the token from the UI that it provides you and run the command:
 
 This will then add your node to the cluster and perform some other best practice stuff.
 
+# Connecting to the cluster
+
+Congrats! The cluster is now ready and installed! Now lets connect to this cluster shall we?
+
+## kubectl
+
+1. On your **local terminal to your machine** install `kubectl`. [Install steps](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+2. In **rancher's management UI** download the kubeconfig file, there's a button top right.
+
+Now you have two options:
+
+1. **If you have already got a docker cluster** then you need to inject various parts of the file you just downloaded into it.
+2. **If you do not have a cluster** then simply move the downloaded file to a file named `~/.kube/config`
+
+After you have done this, you should be able to swap to the cluster using `kubectl config use-context <CONTEXT NAME>`
+
+Now all `kubectl` commands will pipe to your new cluster. Try it! Run `kubectl get pods -a` and it should spit out a long list of pods named like `canal` and `coredns` etc.
+
 # Recommended cluster tools
 
 Below are the tools provided by Rancher which you should install.
+
 
 ## Longhorn
 
 Longhorn is the way your cluster manages it storage volumes. Normally a cloud operator would handle this via Persistent Volume Claims, and spin up say an EBS Volume (in AWS) or say a Digital Ocean Volume attached to the node it's requested on.
 
+If you use the init.sh script, the dependencies are already installed.
+
+Assuming you have set up your `kubectl` correctly, now run 
+
+`curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.1.0/scripts/environment_check.sh | bash`
+
+ on your **local** terminal. This runs a check to ensure you can use Longhorn. It should spit out `MountPropagation is enabled!`. If you get this, you're good to go.
+
+### Configure cluster
+
+In order to actually use Longhorn, you need to configure it. It is **highly** recommended you give the [Rancher Longhorn Docs](https://rancher.com/docs/rancher/v2.6/en/longhorn/) a good read first. We have already fufilled the installation requirements.
+
+Go here to install Longhorn:
+
+`Cluster -> Select Cluster -> Apps & Marketplace -> Search for Longhorn -> Install`
+
+**NOTE** While Longhorn also shows up in the `Cluster Tools` bottom right, it didn't work for me that way.
+
+### Longhorn Config
+
+You should now see a new option called `Longhorn` in the left hand menu. Clicking it will send you to the Longhorn Dashboard.
+
+**I highly encourage you set up an S3 backup for your data!** [Instructions here](https://longhorn.io/docs/1.0.2/snapshots-and-backups/backup-and-restore/set-backup-target/)
+
+To enter the above settings, you need to find the Options section `Longhorn Default Settings` while you're installing Longhorn. Check the Customize Default Settings and add the backup target `s3://<your-bucket-name>@<your-aws-region>/`. 

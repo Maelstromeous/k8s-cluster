@@ -18,7 +18,7 @@ Below are the steps to set up the cluster assuming you have bought your VPS' and
 
 For easy-peasy setup, copy pasta and run the following command as soon as you have access to your VPS:
 
-`sudo apt update && sudo apt upgrade -y && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd ~/k8s-cluster && ./init.sh`
+```sudo apt update && sudo apt upgrade -y && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd ~/k8s-cluster && ./init.sh```
 
 ## Master setup
 

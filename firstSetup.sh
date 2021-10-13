@@ -9,6 +9,6 @@ sudo usermod -aG docker $USER
 sudo newgrp docker
 
 # And update the OS for good measure
-sudo apt update && apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 
 echo "Required setup steps complete. If you wish to run docker commands, please re-source or execute 'bash' to re-source that way."

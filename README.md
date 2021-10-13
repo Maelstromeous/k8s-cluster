@@ -12,16 +12,11 @@ For context, my setup is a number of nodes running Ubuntu 20.X from a VPS provid
 
 Below are the steps to set up the cluster assuming you have bought your VPS' and have attained SSH access to each machine.
 
-## Cloning
-
-For easy-peasy setup, run the following command as soon as you have access to your VPS:
-
-`sudo apt update && sudo apt upgrade && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd k8s-cluster`
 ## First time setup
 
-`./firstSetup.sh`
+For easy-peasy setup, copy pasta and run the following command as soon as you have access to your VPS:
 
-Installs docker and updates the OS ready for rancher, either in master or worker mode.
+`sudo apt update && sudo apt upgrade -y && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd k8s-cluster && ./init.sh`
 
 ## Master setup
 

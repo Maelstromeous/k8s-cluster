@@ -39,3 +39,12 @@ Grab the token from the UI that it provides you and run the command:
 `./rancherNodeSetup.sh <cluster.domain.com> <TOKEN>`
 
 This will then add your node to the cluster and perform some other best practice stuff.
+
+# Recommended cluster tools
+
+Below are the tools provided by Rancher which you should install.
+
+## Longhorn
+
+Longhorn is the way your cluster manages it storage volumes. Normally a cloud operator would handle this via Persistent Volume Claims, and spin up say an EBS Volume (in AWS) or say a Digital Ocean Volume attached to the node it's requested on.
+

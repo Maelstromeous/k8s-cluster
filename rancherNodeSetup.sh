@@ -2,7 +2,7 @@
 # Adds the node to the cluster. You get the token from the cluster manager in rancher.
 # Usage: ./rancherNodeSetup <cluster.domain.com> <TOKEN>
 
-docker run -d --privileged --name k8s-node \
+sudo docker run -d --privileged --name k8s-node \
   --restart=unless-stopped \
   --net=host \
   -v /etc/kubernetes:/etc/kubernetes \

@@ -1,7 +1,9 @@
 # k8s-cluster
 Configuration and associated scripts to provision a Rancher cluster.
 
-This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes.
+This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 
+
+**Disclaimer**: all the below comes as-is, if you break your VPS / cluster with the below commands, that's on you.
 
 # My setup & context
 
@@ -16,7 +18,7 @@ Below are the steps to set up the cluster assuming you have bought your VPS' and
 
 For easy-peasy setup, copy pasta and run the following command as soon as you have access to your VPS:
 
-`sudo apt update && sudo apt upgrade -y && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd k8s-cluster && ./init.sh`
+`sudo apt update && sudo apt upgrade -y && sudo apt install git && git clone https://github.com/Maelstromeous/k8s-cluster.git && cd ~/k8s-cluster && ./init.sh`
 
 ## Master setup
 

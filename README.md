@@ -33,6 +33,7 @@ Visit `<cluster.domain.com>` in your browser, go through the setup steps then ad
 
 ## Creating the cluster
 
+0) Select multi cluster mode
 1) Create a new cluster
 2) Private Registry (if you're using private dockerhub images)
    1) Enabled
@@ -57,7 +58,7 @@ For the first node you're creating, you're **highly** recommended to only add et
 
 ## Node setup
 
-Run the first time setup command, then go back to the cluster UI and run the command it gives you for Registering new nodes. If you lose your place, you can get back to the registration menu by clicking on the 3 lines, Cluster Management, click on your cluster, then Registration.
+Run the first time setup command, then go back to the cluster UI and run the command it gives you for Registering new nodes. This takes a solid 10 minutes or so - grab a cup of :tea: and relax and ignore the red errors for a while!
 
 # Connecting to the cluster
 
@@ -84,6 +85,7 @@ Below are the tools provided by Rancher which you should install.
 * [Backups](#Backups)
 * [Longhorn](#Longhorn)
 * [Monitoring](#Monitoring)
+* [Istio](#Istio)
 
 ## Backups
 
@@ -104,24 +106,6 @@ To set this up, do:
    1) daily-backup: `30 6 * * *` (daily backup 6:30am) 7 day retention
    2) hourly-backup `0 */1 * * *` (hourly backup at top of the hour) 48 hour retention
 
-## Docker Hub Authentication
-
-If like me you use Dockerhub to host all your application builds, you will need to add a credential to enable access to it. In order to do this you need to create a secret and register it with the cluster.
-
-As of v2.6 the process for this has become super confusing. For me, the following worked:
-
-1) Go to navigation tray and go to "Cluster Management"
-2) Find your cluster and click on it's name
-3) Go to config
-4) Find "Private registry"
-5) Add the following:
-   1) URL: NONE (leave blank)
-   2) Username: Your dockerhub username
-   3) Password: Your dockerhub password
-6) Scroll to the bottom and save
-
-The cluster will re-provision and will take a few minutes. After this, you should be able to pull from your private docker repositories.
-
 ## Longhorn
 
 Longhorn is a distributed block storage manager, which enables your cluster to create storage volumes. Normally a cloud operator would handle this via Persistent Volume Claims, and spin up say an EBS Volume (in AWS) or say a Digital Ocean Volume attached to the node it's requested on. This will create a PVC file type called "Longhorn", enabling your apps to persist data.
@@ -136,15 +120,17 @@ Assuming you have set up your `kubectl` correctly, now run
 
 ### Installing
 
+If you wish to use S3 backups, first apply a secret in the format:
+
 Go here to install Longhorn:
 
-`Cluster -> Select Cluster -> Apps & Marketplace -> Search for Longhorn -> Install`
+`Cluster Explorer -> Top left, select Apps & Marketplace -> Charts -> Longhorn`
 
-**NOTE** While Longhorn also shows up in the `Cluster Tools` bottom left, it didn't work for me that way.
+You can pretty much use all defaults, if you have a smaller 2 worker cluster change the default storage class to use 2 replicas instead of the default 3. Note this means you will only be able to have a single node failure tolerance.
 
 ### Configure Longhorn
 
-In order to actually use Longhorn, you need to configure it. It is **highly** recommended you give the [Rancher Longhorn Docs](https://rancher.com/docs/rancher/v2.6/en/longhorn/) a good read first. We have already fufilled the installation requirements.
+In order to actually use Longhorn, you need to configure it. It is **highly** recommended you give the [Rancher Longhorn Docs](https://rancher.com/docs/rancher/v2.5/en/longhorn/) a good read first. We have already fufilled the installation requirements.
 
 ### Longhorn Config
 
@@ -152,20 +138,23 @@ You should now see a new option called `Longhorn` in the left hand menu. Clickin
 
 **I highly encourage you set up an S3 backup for your data!** [Instructions here](https://longhorn.io/docs/1.0.2/snapshots-and-backups/backup-and-restore/set-backup-target/)
 
-You will need to create a secret of your AWS creds for backups. To do this, go to your AWS account and get an IAM ID and secret. Use the below commands to generate the secret
+#### Backup Settings
+You will need to create a secret of your AWS creds for backups. To do this, go to your AWS account and get an IAM Key ID and secret.
 
-```
-echo -n '<AWS_ACCESS_KEY_ID>' > ./key.txt
-echo -n '<AWS_SECRET_ACCESS_KEY> > './secret.txt
+After, you can go to Cluster Explorer, go to Secrets, and create a new opaque secret in the `longhorn-system` namespace. It must be there. In the following format:
 
-kubectl create secret generic -n longhorn-system aws-secret \
---from-file=AWS_ACCESS_KEY_ID=./key.txt \
---from-file=AWS_SECRET_ACCESS_KEY=./secret.txt
-```
+AWS_ACCESS_KEY_ID: <key>
+AWS_SECRET_ACCESS_KEY: <secret>
 
-Supply the name of your secret to the Longhorn settings.
+Supply the name of your secret to the Longhorn backup settings.
+
+Also, for the S3 target, it must be un the format of: `s3://<your-bucket-name>@<your-aws-region>/mypath/` or it will error.
 
 You will also need to create a recurring Backup job or none of your data will be backed up!
+
+#### Replica Auto Balance
+
+I turned this on to best-effort.
 
 ## Monitoring
 
@@ -175,18 +164,37 @@ You should install Longhorn **first** as you'll be able to persist the statistic
 
 ### Settings - Prometheus
 
-* Enable persistence, select Longhorn storage class, ReadWriteMany.
+* Enable persistence, select Longhorn storage class, ReadWriteMany. 30Gi seems reasonable for 10d retention.
 
 ### Settings - Grafana
 
 When you are installing it, on step 2 ensure edit the Grafana settings and add:
 
 * Enable with PVC Template
-* Size 10G (probably doesn't need this much but you never know)
+* Size 5Gi (probably doesn't need this much but you never know)
 * Storage Class: Longhorn
 * ReadWriteMany
 
+### FIXES TO PERFORM
+
+**FIX #1:** There's a bug with the chart if you have Longhorn. You need to add the following to the values.yaml (click edit yaml)
+
+```
+grafana:
+...
+  initChownData:
+    enabled: false
+```
+
+**FIX #2:** There's a bug with the chart where it attempts to add an malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 50Gi`, should be under that.
+
 Be patient with this install, it takes a while.
+
+## Istio
+
+If you're wanting to monitor the performance between your different services and how they're all inter-connected, Istio is an excellent method of doing so.
+
+There is no configuration for this, you run the chart and that's it!
 
 ## You're done!
 

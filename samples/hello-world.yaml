@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-volv-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: default
+  labels:
+    app: hello-world-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+        version: v1
+    spec:
+      volumes:
+        - name: volv
+          persistentVolumeClaim:
+            claimName: longhorn-volv-pvc
+      containers:
+      - name: hello-world
+        image: nginxdemos/hello
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: volv
+            mountPath: /data
+        ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: default
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: helloworld-app-ingress
+spec:
+  tls:
+    - hosts:
+        - "<YOUR HOSTNAME>"
+      secretName: helloworld-app-tls
+  rules:
+    - host: "<YOUR HOSTNAME>"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: hello-world
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: <YOUR HOSTNAME>
+  namespace: default
+spec:
+  secretName: helloworld-app-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: <YOUR HOSTNAME>
+  dnsNames:
+    - <YOUR HOSTNAME>

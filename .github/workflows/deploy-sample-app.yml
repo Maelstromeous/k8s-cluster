@@ -3,7 +3,7 @@ on:
   push:
     branches: [ main ]
 jobs:
-  build-docker-images:
+  build-docker-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,10 +17,10 @@ jobs:
           repository: maelstromeous/hello-world-app
           dockerfile: workflow/Dockerfile
           always_pull: true
-          tags: {{ github.sha }}
+          tags: ${{ github.sha }}
 
   deploy-to-k8s:
-    needs: build-docker-images
+    needs: build-docker-image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

@@ -28,7 +28,7 @@ jobs:
 
       # Commit the kubeconfig secret to a file so we can use kubectl
       - name: Write kubeconfig to file
-        run: echo $KUBECONFIG >> ~/.kube/config
+        run: mkdir -p ~/.kube && echo $KUBECONFIG >> ~/.kube/config
 
       # This is what changes the docker container version. This updates it locally (to the action's workspace) and updates the template key {{ version }} based off the git SHA, as you've used in the build tag.
       - name: Update the K8s deployment file

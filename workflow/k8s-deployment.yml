@@ -1,13 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-world
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world
   namespace: hello-world
   labels:
-    app: hello-world
+    app: hello-world-deployment
 spec:
   replicas: 1
-  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: hello-world
@@ -15,11 +19,61 @@ spec:
     metadata:
       labels:
         app: hello-world
+        version: v1
     spec:
       containers:
-        - name: application
+        - name: hello-world
           image: maelstromeous/hello-world-app:{{ version }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
-      imagePullSecrets:
-        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: hello-world
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: helloworld-app-ingress
+  namespace: hello-world
+spec:
+  tls:
+    - hosts:
+        - "helloworld.mattcavanagh.me"
+      secretName: helloworld-app-tls
+  rules:
+    - host: "helloworld.mattcavanagh.me"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: hello-world
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: helloworld.mattcavanagh.me
+  namespace: hello-world
+spec:
+  secretName: helloworld-app-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: helloworld.mattcavanagh.me
+  dnsNames:
+    - helloworld.mattcavanagh.me

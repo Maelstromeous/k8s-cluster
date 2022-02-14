@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: hello-world
+  name: hello-world-app
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world
+  name: hello-world-app
   namespace: hello-world
   labels:
     app: hello-world-deployment
@@ -14,15 +14,15 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hello-world
+      app: hello-world-app
   template:
     metadata:
       labels:
-        app: hello-world
+        app: hello-world-app
         version: v1
     spec:
       containers:
-        - name: hello-world
+        - name: application
           image: maelstromeous/hello-world-app:{{ version }}
           imagePullPolicy: IfNotPresent
           ports:
@@ -31,11 +31,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-world
-  namespace: hello-world
+  name: hello-world-app
+  namespace: hello-world-app
 spec:
   selector:
-    app: hello-world
+    app: hello-world-app
   ports:
     - protocol: TCP
       port: 80
@@ -45,35 +45,35 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: helloworld-app-ingress
-  namespace: hello-world
+  namespace: hello-world-app
 spec:
   tls:
     - hosts:
-        - "helloworld.mattcavanagh.me"
-      secretName: helloworld-app-tls
+        - "hello.mattcavanagh.me"
+      secretName: hello-world-app-tls
   rules:
-    - host: "helloworld.mattcavanagh.me"
+    - host: "hello.mattcavanagh.me"
       http:
         paths:
           - pathType: Prefix
             path: "/"
             backend:
               service:
-                name: hello-world
+                name: hello-world-app
                 port:
                   number: 80
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: helloworld.mattcavanagh.me
+  name: hello.mattcavanagh.me
   namespace: hello-world
 spec:
-  secretName: helloworld-app-tls
+  secretName: hello-world-app-tls
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
     group: cert-manager.io
-  commonName: helloworld.mattcavanagh.me
+  commonName: hello.mattcavanagh.me
   dnsNames:
-    - helloworld.mattcavanagh.me
+    - hello.mattcavanagh.me

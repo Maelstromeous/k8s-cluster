@@ -1,0 +1,43 @@
+name: Deploy Hello World
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build-docker-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build application image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: maelstromeous/hello-world-app
+          dockerfile: workflow/Dockerfile
+          always_pull: true
+          tags: {{ github.sha }}
+
+  deploy-to-k8s:
+    needs: build-docker-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Commit the kubeconfig secret to a file so we can use kubectl
+      - name: Write kubeconfig to file
+        run: echo $KUBECONFIG >> ~/.kube/config
+
+      # This is what changes the docker container version. This updates it locally (to the action's workspace) and updates the template key {{ version }} based off the git SHA, as you've used in the build tag.
+      - name: Update the K8s deployment file
+        run: sed -i 's|{{ version }}|${{ github.sha }}|' workflow/k8s-deployment.yml
+
+      # Apply the deployment, telling k8s to change the container version to the new one.
+      - name: Apply K8s Deployment resource
+        run: kubectl apply -f workflow/k8s-deployment.yml -n hello-world
+
+      # Outputs the rollout status and returns a 0 signal (thus completing the workflow) once it's rolled out.
+      - name: Verify deployment
+        run: kubectl rollout status deployment/hello-world -n hello-world

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: hello-world
+  labels:
+    app: hello-world
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+        - name: application
+          image: maelstromeous/hello-world-app:{{ version }}
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: regcred

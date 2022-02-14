@@ -46,7 +46,7 @@ Visit `<cluster.domain.com>` in your browser, go through the setup steps then ad
       1) Default: unrestricted
    4) Docker version - Require supported
    5) etc snapshot backup target
-      1) Fill out info, s3 region is `s3.eu-west-2.amazonaws.com
+      1) Fill out info, s3 region is `s3.eu-west-2.amazonaws.com`
    6) Recurring etcd snapshot interval: 3 hours
    7) keep the last 16 (2 days worth)
    8) Maximum worker nodes unavailable: 2
@@ -62,7 +62,7 @@ Run the first time setup command, then go back to the cluster UI and run the com
 
 # Connecting to the cluster
 
-Congrats! The cluster is now ready and installed! Now lets connect to this cluster shall we?
+Congrats! The cluster is now ready and installed! Now let's connect to this cluster shall we?
 
 ## kubectl
 
@@ -85,7 +85,6 @@ Below are the tools provided by Rancher which you should install.
 * [Backups](#Backups)
 * [Longhorn](#Longhorn)
 * [Monitoring](#Monitoring)
-* [Istio](#Istio)
 
 ## Backups
 
@@ -94,7 +93,7 @@ Do this. **Now.** Take it from me, you absolutely should. For example, I had a b
 To set this up, do:
 
 1) Go to the local cluster
-2) Create a new opaque secret called `aws-secret` and fill out the following k:v:
+2) Create a new opaque secret called `aws-secret` and fill out the following key/values:
    1) `accessKey`: `Your AWS Key ID`
    2) `secretKey`: `Your Secret Key`
 3) Go to Cluster Tools
@@ -189,12 +188,6 @@ grafana:
 **FIX #2:** There's a bug with the chart where it attempts to add an malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 50Gi`, should be under that.
 
 Be patient with this install, it takes a while.
-
-## Istio
-
-If you're wanting to monitor the performance between your different services and how they're all inter-connected, Istio is an excellent method of doing so.
-
-There is no configuration for this, you run the chart and that's it!
 
 ## You're done!
 

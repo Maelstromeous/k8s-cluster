@@ -1,5 +1,5 @@
 # k8s-cluster
-Configuration and associated scripts to provision a Rancher cluster.
+Configuration and associated scripts to provision a Rancher cluster, as well as deploying a hello world application workload.
 
 This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 
 
@@ -7,9 +7,11 @@ This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes.
 
 # My setup & context
 
-For context, my setup is a number of nodes running Ubuntu 20.X from a VPS provider called [Contabo](https://contabo.com). They have quite powerful yet very cheap VPS', starting with 4vCPUs and 8GB RAM with 200GB SSD / 50GB NVME for €4.99 (ex vat) a month (if you're on a month rolling you'll get a setup fee though!). What's the catch you might ask - because I thought that as well! Apparently they use slightly older generation CPUs, so don't expect a good return if your app is massively CPU heavy and requires top notch clock speeds. Contabo also wouldn't divulge what the CPUs they use, all they said was "We use Intel and AMD CPUs in the x86 instruction set", so no ARM here *yet*. My workloads are mostly RAM hungry, so the cheap price fits perfectly in my use case.
+For context, my setup is a number of nodes running Ubuntu 20.X from a VPS provider called [Contabo](https://contabo.com). They have quite powerful yet very cheap VPS', starting with 4vCPUs and 8GB RAM with 200GB SSD / 50GB NVMe for €4.99 (ex vat) a month (if you're on a month rolling you'll get a setup fee though!). What's the catch you might ask - because I thought that as well! Apparently they use slightly older generation CPUs, so don't expect a good return if your app is massively CPU heavy and requires top notch clock speeds. Contabo also wouldn't divulge what the CPUs they use, all they said was "We use Intel and AMD CPUs in the x86 instruction set", so no ARM here *yet*. My workloads are mostly RAM hungry, so the cheap price fits perfectly in my use case. Also Contabo's support is a bit slow in my experience, so you may be left in the lurch for a while.
 
-Additionally, I am using Rancher 2.5.x. I had a ton of issues on Rancher 2.6, at the time of writing it's simply too new and I was unable to fix issues such as stuck provisioning nodes etc as you couldn't edit the cluster.yml
+## Rancher
+
+I'm using [Rancher](https://rancher.com/why-rancher) 2.5.x. I had a ton of issues on Rancher 2.6, at the time of writing it's simply too new and I was unable to fix issues such as stuck provisioning nodes etc as you couldn't edit the cluster.yml
 
 # Cluster Config
 
@@ -23,7 +25,7 @@ For easy-peasy setup, copy pasta and run the following command as soon as you ha
 
 ## Rancher Runner setup
 
-Rancher requires a singular master in order to perform cluster administration and in general manage the cluster. This role does a lot of stuff, so if possible it's recommended to have the master installed on a decently specced machine (2 cores, 4GB+ RAM) and is always powered on as it will contain the cluster's control plane.
+Rancher requires a single master in order to perform cluster administration and in general manage the cluster, also known as the "Control Plane". This role does a lot of stuff, so if possible it's recommended to have the master installed on a decently specced machine (2 cores, 4GB+ RAM) and is always powered on as it will contain the cluster's control plane.
 
 `./rancherMasterSetup <cluster.domain.com>`
 
@@ -33,32 +35,51 @@ Visit `<cluster.domain.com>` in your browser, go through the setup steps then ad
 
 ## Creating the cluster
 
-0) Select multi cluster mode
-1) Create a new cluster
-2) Private Registry (if you're using private dockerhub images)
+Select multi cluster mode (you'll be asked this only once).
+
+Go to the very top and click on Global, then Add Cluster. Leave all options the default except:
+
+1) Create a new cluster with "Existing Nodes" option
+2) Name (obviously)
+3) Private Registry (if you're using private dockerhub images - this is important if you're deploying your own apps to this that you don't want everyone and their dog to see your source code!):
    1) Enabled
-   2) URL: empty
+   2) URL: empty / blank (if using dockerhub)
    3) User: dockerhub username
    4) Pass: dockerhub password
-3) Advanced:
+4) Advanced Options:
    1) Nginx Default Backend: yes
-   2) Pod Security Policy Support
-      1) Default: unrestricted
-   4) Docker version - Require supported
-   5) etc snapshot backup target
-      1) Fill out info, s3 region is `s3.eu-west-2.amazonaws.com`
-   6) Recurring etcd snapshot interval: 3 hours
-   7) keep the last 16 (2 days worth)
-   8) Maximum worker nodes unavailable: 2
-   9) Drain nodes: yes
+   2) Docker version: Require supported
+   3) etc snapshot backup target:
+      1) I assume you're competent enough to get your AWS access key etc. I recommend you IAM role permission scope it to Full Access by **bucket ARN** only.
+      2) Choose S3
+      3) Fill out info, s3 region is `s3.eu-west-2.amazonaws.com`
+   5) Recurring etcd snapshot interval: 3 hours
+   6) Keep the last 16 (2 days worth)
+   7) Maximum worker nodes unavailable: 2 (adjust this to your liking)
+   8) Drain nodes: yes
       1) Force: yes
-4) Authorised cluster endpoint: <cluster.fqdn.com>
+5) Authorised cluster endpoint: <cluster.fqdn.com>
+   1) The URL you give here **must** be registered with your DNS provider e.g. Cloudflare.
 
-For the first node you're creating, you're **highly** recommended to only add etcd and control plane and *not* worker. reason being, is you have to faff about removing the worker role later. It's also recommended practice by Rancher.
+Once you have created the cluster, you will be presented with a screen that allows you to craft a command to execute on the node directly.
 
-## Node setup
+## Node provisioning
 
-Run the first time setup command, then go back to the cluster UI and run the command it gives you for Registering new nodes. This takes a solid 10 minutes or so - grab a cup of :tea: and relax and ignore the red errors for a while!
+Run the [first time setup command](#first-time-setup-for-every-node) on each of your nodes if you haven't already, then go back to the cluster UI and run the command it gives you for Registering new nodes. There's a button to copy the command to clipboard.
+
+For the first node you're creating, you're **highly** recommended to only add etcd and control plane and _not_ worker. reason being, is you have to faff about removing the worker role later. It's also recommended practice by Rancher.
+
+Any subsequent nodes you add, make sure to change them to Worker. 
+
+[Typical architecture](https://rancher.com/docs/rancher/v2.5/en/cluster-provisioning/production/recommended-architecture/) is:
+
+* 1 Cluster Control Plane node (ideally 2+)
+* 3+ etcd nodes
+* Worker nodes to suit (you need at least 1 for the cluster to run)
+
+In my setup I have nodes that perform both etcd and worker roles together. This isn't recommended practice however, but I've chosen to ignore that as I'm not made of money.
+
+Once you've added your nodes, sit back, relax, grab a brew, and watch the cluster provision. 
 
 # Connecting to the cluster
 
@@ -142,10 +163,13 @@ You will need to create a secret of your AWS creds for backups. To do this, go t
 
 After, you can go to Cluster Explorer, go to Secrets, and create a new opaque secret in the `longhorn-system` namespace. It must be there. In the following format:
 
+```text
 AWS_ACCESS_KEY_ID: <key>
 AWS_SECRET_ACCESS_KEY: <secret>
+```
 
-Supply the name of your secret to the Longhorn backup settings.
+
+Supply the name of your secret you just made to the Longhorn backup settings.
 
 Also, for the S3 target, it must be un the format of: `s3://<your-bucket-name>@<your-aws-region>/mypath/` or it will error.
 
@@ -157,20 +181,20 @@ I turned this on to best-effort.
 
 ## Monitoring
 
-You're **highly** recommended installing the Rancher monitoring suite. This has built in monitoring and graphing tools for use with your cluster to enable you to diagnose issues and see the overall performance of it.
+You're **highly** recommended installing the Rancher monitoring application. This has built in monitoring and graphing tools for use with your cluster to enable you to diagnose issues and see the overall performance of it.
 
 You should install Longhorn **first** as you'll be able to persist the statistics via a Longhorn PVC, so they don't get lost should a node or two die.
 
 ### Settings - Prometheus
 
-* Enable persistence, select Longhorn storage class, ReadWriteMany. 30Gi seems reasonable for 10d retention.
+* Enable persistence, select Longhorn storage class, ReadWriteMany. 30Gi seems reasonable for 10d retention. Don't forget to change the Retention setting to match.
 
 ### Settings - Grafana
 
 When you are installing it, on step 2 ensure edit the Grafana settings and add:
 
 * Enable with PVC Template
-* Size 5Gi (probably doesn't need this much but you never know)
+* Size 5Gi (probably doesn't need this much, but you never know)
 * Storage Class: Longhorn
 * ReadWriteMany
 
@@ -185,7 +209,7 @@ grafana:
     enabled: false
 ```
 
-**FIX #2:** There's a bug with the chart where it attempts to add an malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 50Gi`, should be under that.
+**FIX #2:** There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 30Gi`, should be under that. Delete the `selector` property entirely.
 
 Be patient with this install, it takes a while.
 

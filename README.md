@@ -1,4 +1,4 @@
-# k8s-cluster
+                              # k8s-cluster
 Configuration and associated scripts to provision a Rancher cluster, as well as deploying a hello world application workload.
 
 This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 
@@ -7,7 +7,7 @@ This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes.
 
 # My setup & context
 
-For context, my setup is a number of nodes running Ubuntu 20.X from a VPS provider called [Contabo](https://contabo.com). They have quite powerful yet very cheap VPS', starting with 4vCPUs and 8GB RAM with 200GB SSD / 50GB NVMe for €4.99 (ex vat) a month (if you're on a month rolling you'll get a setup fee though!). What's the catch you might ask - because I thought that as well! Apparently they use slightly older generation CPUs, so don't expect a good return if your app is massively CPU heavy and requires top notch clock speeds. Contabo also wouldn't divulge what the CPUs they use, all they said was "We use Intel and AMD CPUs in the x86 instruction set", so no ARM here *yet*. My workloads are mostly RAM hungry, so the cheap price fits perfectly in my use case. Also Contabo's support is a bit slow in my experience, so you may be left in the lurch for a while.
+For context, my setup is a number of nodes running Ubuntu 20.X from a VPS provider called [Contabo](https://contabo.com). They have quite powerful yet very cheap VPS', starting with 4vCPUs and 8GB RAM with 200GB SSD / 50GB NVMe for €4.99 (ex vat) a month (if you're on a month rolling you'll get a setup fee though!). What's the catch you might ask - because I thought that as well! Apparently they use slightly older generation CPUs, so don't expect a good return if your app is massively CPU heavy and requires top notch clock speeds. Also their support is rather... subpar in my experience. Contabo also wouldn't divulge what the CPUs they use, all they said was "We use Intel and AMD CPUs in the x86 instruction set", so no ARM here *yet*. My workloads are mostly RAM hungry, so the cheap price fits perfectly in my use case. Also Contabo's support is a bit slow in my experience, so you may be left in the lurch for a while.
 
 ## Rancher
 

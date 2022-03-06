@@ -169,11 +169,23 @@ AWS_ACCESS_KEY_ID: <key>
 AWS_SECRET_ACCESS_KEY: <secret>
 ```
 
-Supply the name of your secret you just made to the Longhorn backup settings.
+In Longhorn's settings, change: 
 
-Also, for the S3 target, it must be un the format of: `s3://<your-bucket-name>@<your-aws-region>/mypath/` or it will error.
+1) Backup Target: `s3://<your-bucket-name>@<your-aws-region>/mypath/` e.g. `s3://your-bucket@eu-west-2/backups`
+2) Backup Target Secret: `your-secret-name`
+3) Recommended
+   1) Storage Over Provisioning Percentage: `125%`
+   2) Replica Auto Balance: `best-effort`
+   3) Pod deletion policy: `delete-both-statefulset-and-deployment-pod`
 
 You will also need to create a recurring Backup job or none of your data will be backed up!
+
+I've made it easy by adding the backup jobs in YML format, found in `services/longhorn-backups.yml` - Run `kubectl apply -f services/longhorn-backups.yml` to apply the below recurring jobs:
+
+1) Snapshot (delta backups) of images - every 3 hours for 2 days. This automatically applies to all volumes which are in the default group.
+2) Full backup of all images, **but** they only apply for volumes within the "backups" group.
+
+Tip: To add a volume to a group, you need to click on the orange database icon with a circle around it, then go to Group in there. Totally obvious, I know.
 
 #### Replica Auto Balance
 

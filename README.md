@@ -217,9 +217,7 @@ Be patient with this install, it takes a while.
 
 I use cert-manager to provision and distribute certificates from LetsEncrypt. To install it, run:
 
-1) `helm repo add jetstack https://charts.jetstack.io`
-2) `kubectl create namespace cert-manager`
-3) `kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.1/cert-manager.crds.yaml`
+1) `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml`
 
 After this, the CRDs needed to provision certificates are now available, see `deploying-services.md` on their use.
 

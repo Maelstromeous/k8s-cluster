@@ -10,8 +10,8 @@ Firstly, we need to manage ingress into our cluster. This will be done by using 
 
 Thankfully, we are able to very simply and easily add LetsEncrypt certificate providers!
 
-1) To save some time, I've done this for you, open `services/cert-managers.yaml` and change your email address
-2) Run `kubectl apply -f services/cert-managers.yaml`.
+1) To save some time, I've done this for you, open `services/cert-managers.yml` and change your email address
+2) Run `kubectl apply -f services/cert-managers.yml`.
 
 What this will do is create two LetsEncrypt cluster-wide certificate issuers (one staging for testing, one production / live which has rate limits), which we can use across the cluster despite namespace.
 
@@ -19,7 +19,7 @@ We are using [HTTP Validation](https://cert-manager.io/docs/tutorials/acme/http-
 
 ## Deploying a hello world app
 
-Now open `samples/hello-world.yaml`. This contains a hello world application created by NGINX which spits out the IP of the host (in this case, it will be the Pod's IP) and it will create 3 copies of said pod.
+Now open `samples/hello-world.yml`. This contains a hello world application created by NGINX which spits out the IP of the host (in this case, it will be the Pod's IP) and it will create 3 copies of said pod.
 
 To make it work, change `<YOUR HOSTNAME>` to a hostname that you have available, e.g. `hello.foo.com`. Your DNS for the A record **must point to a worker**, NOT your control plane instance (that got me scratching my head for hours). You are recommended to point the A record to each worker IP you have to attempt to load balance. 
 
@@ -33,7 +33,7 @@ This file contains:
 4) An ingress - this enables the nginx ingress controller which is installed by Rancher by default and instructs it on what to do and where to direct traffic. In this case, it's routing all traffic hitting your host to the service as defined above.
 5) Finally, a certificate. This is configured to use the *production* issuer in the file, so if you're not fully confident with it yet change `letsencrypt` to `letsencrypt-staging` in the issuer reference. This resource will then spawn a `challenge` resource and attempt to authenticate your hostname by hitting it. It's a bit magic, and is out of the scope of this tutorial. If your cert isn't getting provisioned, hop onto rancher and try to find the resource, it tells you why it's failing (e.g. got a 403 code instead of 200 etc).
 
-Once you have registered a domain name and changed the file, simply run `kubectl apply -f samples/hello-world.yaml` and after a minute or so the app should be fully loaded and responding in your browser, with HTTPS and a fully signed cert, on your domain. Keep refreshing the page, and it should change the reported IP / hostname each time.
+Once you have registered a domain name and changed the file, simply run `kubectl apply -f samples/hello-world.yml` and after a minute or so the app should be fully loaded and responding in your browser, with HTTPS and a fully signed cert, on your domain. Keep refreshing the page, and it should change the reported IP / hostname each time.
 
 Congrats, you have now just deployed a fully working application! 🎉
 

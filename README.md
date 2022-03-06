@@ -52,12 +52,12 @@ Go to the very top and click on Global, then Add Cluster. Leave all options the 
    3) etc snapshot backup target:
       1) I assume you're competent enough to get your AWS access key etc. I recommend you IAM role permission scope it to Full Access by **bucket ARN** only.
       2) Choose S3
-      3) Fill out info, s3 region is `s3.eu-west-2.amazonaws.com`
-   5) Recurring etcd snapshot interval: 3 hours
-   6) Keep the last 16 (2 days worth)
-   7) Maximum worker nodes unavailable: 2 (adjust this to your liking)
-   8) Drain nodes: yes
-      1) Force: yes
+      3) Fill out info, s3 region endpoint is `s3.eu-west-2.amazonaws.com`
+   4) Recurring etcd snapshot interval: 3 hours
+   5) Keep the last 16 (2 days worth)
+   6) Maximum worker nodes unavailable: 2 (adjust this to your liking)
+   7) Drain nodes: yes
+   8) Force: yes
 5) Authorised cluster endpoint: <cluster.fqdn.com>
    1) The URL you give here **must** be registered with your DNS provider e.g. Cloudflare.
 
@@ -88,12 +88,12 @@ Congrats! The cluster is now ready and installed! Now let's connect to this clus
 ## kubectl
 
 1. On your **local terminal to your machine** install `kubectl`. [Install steps](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
-2. In **rancher's management UI** download the kubeconfig file, there's a button top right.
+2. To get the kubeconfig file, go to your cluster's dashboard (can get to it from the dropdown top left) and download the kubeconfig file, there's a button top right.
 
 Now you have two options:
 
-1. **If you have already got a docker cluster** then you need to inject various parts of the file you just downloaded into it.
-2. **If you do not have a cluster** then simply move the downloaded file to a file named `~/.kube/config`
+1. **If you have already got a kubernetes cluster** then you need to inject various parts of the file you just downloaded into it.
+2. **If you do not have a cluster** then simply move / copy the downloaded file to a file named `~/.kube/config`
 
 After you have done this, you should be able to swap to the cluster using `kubectl config use-context <CONTEXT NAME>`
 
@@ -106,6 +106,7 @@ Below are the tools provided by Rancher which you should install.
 * [Backups](#Backups)
 * [Longhorn](#Longhorn)
 * [Monitoring](#Monitoring)
+* [Certificates](#Certificates)
 
 ## Backups
 
@@ -168,7 +169,6 @@ AWS_ACCESS_KEY_ID: <key>
 AWS_SECRET_ACCESS_KEY: <secret>
 ```
 
-
 Supply the name of your secret you just made to the Longhorn backup settings.
 
 Also, for the S3 target, it must be un the format of: `s3://<your-bucket-name>@<your-aws-region>/mypath/` or it will error.
@@ -194,7 +194,7 @@ You should install Longhorn **first** as you'll be able to persist the statistic
 When you are installing it, on step 2 ensure edit the Grafana settings and add:
 
 * Enable with PVC Template
-* Size 5Gi (probably doesn't need this much, but you never know)
+* Size 2Gi
 * Storage Class: Longhorn
 * ReadWriteMany
 
@@ -209,9 +209,19 @@ grafana:
     enabled: false
 ```
 
-**FIX #2:** There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 30Gi`, should be under that. Delete the `selector` property entirely.
+**FIX #2:** There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 40Gi`, should be under that. Delete the `selector` property entirely.
 
 Be patient with this install, it takes a while.
+
+## Certificates
+
+I use cert-manager to provision and distribute certificates from LetsEncrypt. To install it, run:
+
+1) `helm repo add jetstack https://charts.jetstack.io`
+2) `kubectl create namespace cert-manager`
+3) `kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.1/cert-manager.crds.yaml`
+
+After this, the CRDs needed to provision certificates are now available, see `deploying-services.md` on their use.
 
 ## You're done!
 

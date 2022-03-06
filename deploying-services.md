@@ -10,8 +10,8 @@ Firstly, we need to manage ingress into our cluster. This will be done by using 
 
 Thankfully, we are able to very simply and easily add LetsEncrypt certificate providers!
 
-1) To save some time, I've done this for you, open `services/cert-manager-acme.yaml` and change your email address
-2) and run `kubectl apply -f services/cert-manager-acme.yaml`.
+1) To save some time, I've done this for you, open `services/cert-managers.yaml` and change your email address
+2) Run `kubectl apply -f services/cert-managers.yaml`.
 
 What this will do is create two LetsEncrypt cluster-wide certificate issuers (one staging for testing, one production / live which has rate limits), which we can use across the cluster despite namespace.
 

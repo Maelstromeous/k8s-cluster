@@ -1,4 +1,4 @@
-                              # k8s-cluster
+# k8s-cluster
 Configuration and associated scripts to provision a Rancher cluster, as well as deploying a hello world application workload.
 
 This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 

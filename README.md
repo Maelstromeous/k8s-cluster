@@ -221,11 +221,11 @@ grafana:
     enabled: false
 ```
 
-**POSSIBLE FIX #2:** 
+**FIX #2:** 
 
-This *may* have been fixed already - as of 23/04/22 there was no selector property to be deleted in the YAML.
+There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`. Searching for `matchExpressions` might be your best bet. Delete the `selector` property entirely.
 
-There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 40Gi`, should be under that. Delete the `selector` property entirely.
+If you do not see the `matchExpressions`, you don't have the correct PVC config for prometheus.
 
 Be patient with this install, it takes a while.
 

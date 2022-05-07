@@ -1,4 +1,4 @@
-                              # k8s-cluster
+# k8s-cluster
 Configuration and associated scripts to provision a Rancher cluster, as well as deploying a hello world application workload.
 
 This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 
@@ -221,7 +221,11 @@ grafana:
     enabled: false
 ```
 
-**FIX #2:** There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`, or `storage: 40Gi`, should be under that. Delete the `selector` property entirely.
+**FIX #2:** 
+
+There's a bug with the chart where it attempts to add a malformed selector field for the persistent volume claim for `prometheus`. You need to remove the field entirely. Look for `selector: { matchExpressions: []`. Searching for `matchExpressions` might be your best bet. Delete the `selector` property entirely.
+
+If you do not see the `matchExpressions`, you don't have the correct PVC config for prometheus.
 
 Be patient with this install, it takes a while.
 

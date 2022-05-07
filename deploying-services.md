@@ -27,7 +27,7 @@ Note, DNS based load balancing doesn't work how you may think it does... it's ra
 
 This file contains:
 
-1) A persistent volume claim. This is the way you request disk space from the cluster. Note here we're using Longhorn, which is what we set up in the cluster to provision disks. Also note here we've got the `ReadWriteMany` type, which enables multiple pods to write to the same disk.
+1) A persistent volume claim. This is the way you request disk space from the cluster. Note here we're using Longhorn, which is what we set up in the cluster to provision disks. Also note here we've got the `ReadWriteOnce` type - I tried using `ReadWriteMany` in the hopes it would alleviate issues to do with pods swapping between nodes and having their volumes in a locked state, but it turned out to have the opposite effect.
 2) A deployment - this maintains 3 number of replica pods. The volume is mounted at this level and that's then distributed to the rest of the pods.
 3) A service - this enables the ingresses to hit this service and that of which then load balances (via round-robin) to the pods.
 4) An ingress - this enables the nginx ingress controller which is installed by Rancher by default and instructs it on what to do and where to direct traffic. In this case, it's routing all traffic hitting your host to the service as defined above.

@@ -10,7 +10,7 @@ metadata:
   namespace: hello-world
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: longhorn
   resources:
     requests:

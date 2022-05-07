@@ -199,16 +199,16 @@ You should install Longhorn **first** as you'll be able to persist the statistic
 
 ### Settings - Prometheus
 
-* Enable persistence, select Longhorn storage class, ReadWriteMany. 30Gi seems reasonable for 10d retention. Don't forget to change the Retention setting to match.
+* Enable persistence, select Longhorn storage class, ReadWriteOnce. 30Gi seems reasonable for 10d retention. Don't forget to change the Retention setting to match.
 
 ### Settings - Grafana
 
 When you are installing it, on step 2 ensure edit the Grafana settings and add:
 
 * Enable with PVC Template
-* Size 2Gi
+* Size 1Gi
 * Storage Class: Longhorn
-* ReadWriteMany
+* ReadWriteOnce
 
 ### FIXES TO PERFORM
 

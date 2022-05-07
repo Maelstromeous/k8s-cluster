@@ -7,7 +7,7 @@ sudo docker run -d --name rancher \
   -p 80:80 -p 443:443 \
   -v /opt/rancher:/var/lib/rancher \
   --privileged \
-  rancher/rancher:v2.5.12 \
+  rancher/rancher:v2.6.4 \
   --acme-domain $1
 
 docker logs -f rancher

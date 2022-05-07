@@ -10,4 +10,4 @@ sudo docker run -d --name rancher \
   rancher/rancher:v2.6.4 \
   --acme-domain $1
 
-docker logs -f rancher
+sudo docker logs -f rancher

@@ -1,4 +1,13 @@
 # k8s-cluster
+
+## This is no longer maintained
+
+As of 14th May, I'm no longer using a rancher based cluster. My findings was with Contabo their network was utter trash, and the cluster was just constantly unreliable. I have now since moved to OVH using a managed kubernetes backplane to remove a ton of headaches.
+
+I'll however keep this repo open for everyone should they wish to try on a slightly better provider.
+
+# Premise 
+
 Configuration and associated scripts to provision a Rancher cluster, as well as deploying a hello world application workload.
 
 This setup assumes you are using ubuntu boxes. PRs are welcome for other OSes. 
@@ -31,15 +40,13 @@ Rancher requires a single master in order to perform cluster administration and 
 
 `<cluster.domain.com>` is the FQDN used for the purposes of having a self signed LetsEncrypt certificate so you don't have to worry about SSL! :tada:
 
-Visit `<cluster.domain.com>` in your browser, go through the setup steps then add your own cluster! When you go to create one however, ensure you choose Custom cluster. It also has to be RKE1 (RK2 is in tech preview and is currently targeted for the government sector).
+Visit `<cluster.domain.com>` in your browser, put in your password as the prompt suggests and create a user.
+
+After this you will be presented with the home page, go to clusters -> Create and create a Custom cluster.
 
 ## Creating the cluster
 
-Select multi cluster mode (you'll be asked this only once).
-
-Go to the very top and click on Global, then Add Cluster. Leave all options the default except:
-
-1) Create a new cluster with "Existing Nodes" option
+1) Create a new cluster with "Custom" option
 2) Name (obviously)
 3) Private Registry (if you're using private dockerhub images - this is important if you're deploying your own apps to this that you don't want everyone and their dog to see your source code!):
    1) Enabled
@@ -115,17 +122,19 @@ Do this. **Now.** Take it from me, you absolutely should. For example, I had a b
 To set this up, do:
 
 1) Go to the local cluster
-2) Create a new opaque secret called `aws-secret` and fill out the following key/values:
+2) On the left side menu, go to Storage -> Secrets, then Create
+3) Create a new opaque secret called `aws-secret` and fill out the following key/values:
    1) `accessKey`: `Your AWS Key ID`
    2) `secretKey`: `Your Secret Key`
-3) Go to Cluster Tools
-4) Install Rancher Backup
-5) Set up the default location being an S3 bucket and use the secret. Make sure to set up the endpoint correctly. e.g. `s3.eu-west-2.amazonaws.com`
-6) **Ensure** that you create a recurring backup or you will have achieved nothing.
-7) You should create at one off test backup to verify the objects land in S3.
-8) Recommended schedule:
-   1) daily-backup: `30 6 * * *` (daily backup 6:30am) 7 day retention
-   2) hourly-backup `0 */1 * * *` (hourly backup at top of the hour) 48 hour retention
+4) Go to Cluster Tools
+5) Install Rancher Backups
+6) Set up the default location being an S3 bucket and use the secret. Make sure to set up the endpoint correctly. e.g. `s3.eu-west-2.amazonaws.com`
+7) Go to Rancher Backups on the left menu -> Backups
+8) **Ensure** that you create a recurring backup or you will have achieved nothing.
+9) You should create at one off test backup to verify the objects land in S3.
+10) Recommended schedule:
+    1) daily-backup: `30 6 * * *` (daily backup 6:30am) 7 day retention
+    2) hourly-backup `0 */1 * * *` (hourly backup at top of the hour) 48 hour retention
 
 ## Longhorn
 
@@ -141,17 +150,17 @@ Assuming you have set up your `kubectl` correctly, now run
 
 ### Installing
 
-If you wish to use S3 backups, first apply a secret in the format:
-
 Go here to install Longhorn:
 
-`Cluster Explorer -> Top left, select Apps & Marketplace -> Charts -> Longhorn`
+`Cluster Explorer -> Menu on the left at the bottom "Cluster Tools" -> Longhorn (Install)`
 
 You can pretty much use all defaults, if you have a smaller 2 worker cluster change the default storage class to use 2 replicas instead of the default 3. Note this means you will only be able to have a single node failure tolerance.
 
+You may want to give it about 5 minutes after Helm has installed it to settle down, various pods for some reason aren't ready yet.
+
 ### Configure Longhorn
 
-In order to actually use Longhorn, you need to configure it. It is **highly** recommended you give the [Rancher Longhorn Docs](https://rancher.com/docs/rancher/v2.5/en/longhorn/) a good read first. We have already fufilled the installation requirements.
+In order to actually use Longhorn, you need to configure it. It is **highly** recommended you give the [Rancher Longhorn Docs](https://rancher.com/docs/rancher/v2.6/en/longhorn/) a good read first. We have already fufilled the installation requirements.
 
 ### Longhorn Config
 

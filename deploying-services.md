@@ -15,6 +15,10 @@ Thankfully, we are able to very simply and easily add LetsEncrypt certificate pr
 
 What this will do is create two LetsEncrypt cluster-wide certificate issuers (one staging for testing, one production / live which has rate limits), which we can use across the cluster despite namespace.
 
+If you get an error along the lines of `no matches for kind "ClusterIssuer"` then the CRDs don't exist, install them via running:
+
+`kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
+
 We are using [HTTP Validation](https://cert-manager.io/docs/tutorials/acme/http-validation/) here, where the cluster will configure the nginx ingress to enable LE to talk to us and verify we're the owners of the domain. Like magic! 🪄
 
 ## Deploying a hello world app
